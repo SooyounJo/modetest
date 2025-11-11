@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
 const A1 = dynamic(() => import("@/components/a1"), { ssr: false });
-const A2 = dynamic(() => import("@/components/a2"), { ssr: false });
-const A3 = dynamic(() => import("@/components/a3"), { ssr: false });
 const A4 = dynamic(() => import("@/components/a4"), { ssr: false });
 const A5 = dynamic(() => import("@/components/a5"), { ssr: false });
 const A6 = dynamic(() => import("@/components/a6"), { ssr: false });
@@ -12,13 +10,10 @@ const A7 = dynamic(() => import("@/components/a7"), { ssr: false });
 const A8 = dynamic(() => import("@/components/a8"), { ssr: false });
 
 export default function Home() {
+  const availableScenes = [1, 4, 5, 6, 7, 8];
   const [scene, setScene] = useState(1);
   const SceneComp = useMemo(() => {
     switch (scene) {
-      case 2:
-        return A2;
-      case 3:
-        return A3;
       case 4:
         return A4;
       case 5:
@@ -60,8 +55,7 @@ export default function Home() {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        {Array.from({ length: 8 }).map((_, i) => {
-          const n = i + 1;
+        {availableScenes.map((n) => {
           const active = scene === n;
           return (
             <button

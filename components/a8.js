@@ -1,14 +1,28 @@
-import HeartCanvas from "@/components/HeartCanvas";
+import dynamic from "next/dynamic";
+
+const LineExtrudeCityCanvas = dynamic(
+  () => import("@/components/LineExtrudeCityCanvas"),
+  { ssr: false }
+);
 
 export default function A8() {
   return (
-    <HeartCanvas
-      colorA="#f7971e"
-      colorB="#ffd200"
-      heartbeatSpeed={2.0}
-      rippleStrength={0.17}
-      grainAmount={0.045}
-      bgGradient="radial-gradient(1200px 600px at 50% 30%, rgba(247, 151, 30, 0.08), rgba(14,10,7,1) 60%)"
+    <LineExtrudeCityCanvas
+      bg="#0a0d12"
+      line="#f9e6b3"
+      colsNear={140}
+      colsMid={96}
+      colsFar={64}
+      speedNear={0.28}
+      speedMid={0.18}
+      speedFar={0.12}
+      widthNear={0.28}
+      widthMid={0.22}
+      widthFar={0.18}
+      overshoot={0.22}
+      squeeze={0.18}
+      contrast={1.18}
+      grain={0.02}
     />
   );
 }

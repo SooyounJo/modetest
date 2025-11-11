@@ -1,15 +1,15 @@
-import HeartCanvas from "@/components/HeartCanvas";
-
 export default function A4() {
   return (
-    <HeartCanvas
-      colorA="#00ff87"
-      colorB="#00ffa3"
-      heartbeatSpeed={1.5}
-      rippleStrength={0.22}
-      grainAmount={0.04}
-      bgGradient="radial-gradient(1200px 600px at 50% 30%, rgba(0, 255, 135, 0.08), rgba(5,10,8,1) 60%)"
-    />
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        background: "#000000",
+        position: "relative",
+      }}
+    >
+      {/* 라인 스타일용 캔버스 교체가 필요하면 알려줘. 지금은 요구대로 블록 제거 상태로 두었습니다. */}
+    </div>
   );
 }
 

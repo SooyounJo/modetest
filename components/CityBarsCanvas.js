@@ -16,6 +16,13 @@ export default function CityBarsCanvas(props) {
     gapY = 0.08,       // 행/그룹 사이 여백(0~0.5)
     segMin = 6,        // 한 박스가 차지하는 최소 행 수
     segMax = 14,       // 한 박스가 차지하는 최대 행 수
+    squeeze = 0.12,    // 높이 변화에 따른 가로 압축 정도(스퀴시)
+    bend = 0.08,       // 상단으로 갈수록 살짝 휘어지는 정도
+    wobble = 1.5,      // 휘어짐 시간 주파수
+    elasticity = 0.25, // 추가 세로 스트레치 감
+    overshoot = 0.22,  // 고무 같은 오버슈트 강도
+    warpAmp = 0.03,    // 내부 수직 도메인 워프 세기
+    warpFreq = 1.5,    // 내부 워프 주파수
     grain = 0.05,
     contrast = 1.15,
   } = props || {};
@@ -54,6 +61,13 @@ export default function CityBarsCanvas(props) {
       u_gapY: { value: gapY },
       u_segMin: { value: segMin },
       u_segMax: { value: segMax },
+      u_squeeze: { value: squeeze },
+      u_bend: { value: bend },
+      u_wobble: { value: wobble },
+      u_elasticity: { value: elasticity },
+      u_overshoot: { value: overshoot },
+      u_warpAmp: { value: warpAmp },
+      u_warpFreq: { value: warpFreq },
       u_grain: { value: grain },
       u_contrast: { value: contrast },
     };
@@ -84,6 +98,13 @@ export default function CityBarsCanvas(props) {
       uniform float u_gapY;
       uniform float u_segMin;
       uniform float u_segMax;
+      uniform float u_squeeze;
+      uniform float u_bend;
+      uniform float u_wobble;
+      uniform float u_elasticity;
+      uniform float u_overshoot;
+      uniform float u_warpAmp;
+      uniform float u_warpFreq;
       uniform float u_grain;
       uniform float u_contrast;
 
@@ -95,26 +116,43 @@ export default function CityBarsCanvas(props) {
         float x = uv.x * cols;
         float colIdx = floor(x);
         float xf = fract(x);
-
-        // horizontal box body with small gap to avoid pure lines
-        float bodyX = step(u_gapX, xf) * step(u_gapX, 1.0 - xf);
-        bodyX = smoothstep(0.0, 0.02, bodyX);
+        float xLocal = xf - 0.5;
 
         // per-column timing and height
         float phase = hash(colIdx * 17.7 + seed * 9.1) * 6.2831;
         float sp = speed * mix(0.7, 1.3, hash(colIdx * 23.1 + seed * 4.6));
         float base = mix(0.2, 0.95, hash(colIdx * 7.1 + seed * 3.2));  // base height ratio
         float amp = mix(0.08, 0.25, hash(colIdx * 5.3 + seed * 8.9));  // breathing amplitude
-        float h = clamp(base + amp * sin(t * sp + phase), 0.05, 0.98);
+        float arg = t * sp + phase;
+        float s = sin(arg);
+        float c = cos(arg); // height 변화의 속도(부호)로 사용
+        float h = base + amp * (s + u_overshoot * sin(2.4*arg) * exp(-abs(s)*0.6));
+        h = clamp(h, 0.05, 0.98);
+
+        // rubber-like squeeze & bend
+        float halfBase = 0.5 - u_gapX;
+        float halfDyn = halfBase * (1.0 - u_squeeze * c); // 높아질 때 약간 좁아짐
+        float yRel = clamp(uv.y / max(h, 1e-4), 0.0, 1.0);
+        // elasticity: 상승/하강 속도에 따라 y축을 비선형 스트레치
+        float stretch = 1.0 + u_elasticity * c;
+        yRel = pow(yRel, 1.0 / max(0.001, stretch));
+        float bendAmp = u_bend * mix(0.6, 1.1, hash(colIdx * 31.1 + seed*2.7));
+        float bendShift = bendAmp * (yRel - 0.2) * (0.6 + 0.4 * sin(t * u_wobble + phase * 1.3));
+        xLocal += bendShift;
+        float edge = halfDyn - abs(xLocal);
+        float bodyX = smoothstep(0.0, 0.02, edge);
+
+        // internal vertical domain warp for rubber feel
+        float yy = uv.y + u_warpAmp * s * sin(uv.y * (6.2831 * u_warpFreq) + colIdx*0.7 + t * 0.6);
 
         // vertical segmentation into LONG boxes: group multiple rows per box
         float yCells = rows;
         float segLen = floor(mix(u_segMin, u_segMax, hash(colIdx * 41.3 + seed * 2.1))); // rows per box
         segLen = max(segLen, 1.0);
-        float yIdx = floor(uv.y * yCells);
+        float yIdx = floor(clamp(yy, 0.0, 1.0) * yCells);
         float yTop = floor(h * yCells);
         float yBelow = step(yIdx + 0.5, yTop + 0.5);
-        float yInSeg = fract((uv.y * yCells) / segLen);
+        float yInSeg = fract((yy * yCells) / segLen);
         float bodyY = step(u_gapY, yInSeg) * step(u_gapY, 1.0 - yInSeg);
         bodyY = smoothstep(0.0, 0.02, bodyY);
 
@@ -185,7 +223,7 @@ export default function CityBarsCanvas(props) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
     };
-  }, [fg, bg, colsNear, colsMid, colsFar, speedNear, speedMid, speedFar, rows, gapX, gapY, grain, contrast]);
+  }, [fg, bg, colsNear, colsMid, colsFar, speedNear, speedMid, speedFar, rows, gapX, gapY, segMin, segMax, squeeze, bend, wobble, elasticity, overshoot, warpAmp, warpFreq, grain, contrast]);
 
   return (
     <div
