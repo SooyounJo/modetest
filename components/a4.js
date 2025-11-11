@@ -1,15 +1,28 @@
+import dynamic from "next/dynamic";
+
+const LinesOnlyCanvas = dynamic(
+  () => import("@/components/LinesOnlyCanvas"),
+  { ssr: false }
+);
+
 export default function A4() {
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100vh",
-        background: "#000000",
-        position: "relative",
-      }}
-    >
-      {/* 라인 스타일용 캔버스 교체가 필요하면 알려줘. 지금은 요구대로 블록 제거 상태로 두었습니다. */}
-    </div>
+    <LinesOnlyCanvas
+      topColor="#eef1f4"
+      midColor="#d9e1ea"
+      bottomColor="#0f1a27"
+      groundColor="#102031"
+      lineColor="#e7eef7"
+      widthPxPerCluster={12}
+      linesPerClusterMin={2}
+      linesPerClusterMax={4}
+      lineWidth={1}
+      groundBase={0.62}
+      groundAmplitude={0.15}
+      lineHeightMin={0.12}
+      lineHeightMax={0.4}
+      seed={11}
+    />
   );
 }
 
