@@ -1,26 +1,26 @@
 import dynamic from "next/dynamic";
 
-const LinesOnlyCanvas = dynamic(
-  () => import("@/components/LinesOnlyCanvas"),
+const FallingParticlesLinesCanvas = dynamic(
+  () => import("@/components/FallingParticlesLinesCanvas"),
   { ssr: false }
 );
 
 export default function A4() {
   return (
-    <LinesOnlyCanvas
-      topColor="#eef1f4"
-      midColor="#d9e1ea"
-      bottomColor="#0f1a27"
-      groundColor="#102031"
-      lineColor="#e7eef7"
-      widthPxPerCluster={12}
-      linesPerClusterMin={2}
-      linesPerClusterMax={4}
+    <FallingParticlesLinesCanvas
+      bg="#030507"
+      fg="#e8f0ff"
+      cols={120}
+      rows={84}
+      heightSmooth={0.26}
+      heightJitter={0.12}
+      baseMin={0.28}
+      baseMax={0.95}
+      margin={0.18}
+      windowFill={0.62}
+      growSpeed={1.1}
       lineWidth={1}
-      groundBase={0.62}
-      groundAmplitude={0.15}
-      lineHeightMin={0.12}
-      lineHeightMax={0.4}
+      contrast={1.2}
       seed={11}
     />
   );
